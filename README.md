@@ -5,6 +5,14 @@ Covers all 8 build phases from the action list. Model-based classifier component
 
 ---
 
+## CoSyn Governance Stack — Background
+
+The CGS Runtime Wrapper implements the CoSyn Governance Stack (CGS) v14.1.0. The full whitepaper corpus — covering the constitutional architecture, design rationale, and comparisons with other governance approaches — is published at:
+
+**[CoSyn Governance Whitepaper Corpus](https://github.com/SEGaither/cosyn-governance/tree/main/docs)**
+
+---
+
 ## Table of contents
 
 1. [Prerequisites](#prerequisites)
