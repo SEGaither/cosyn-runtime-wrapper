@@ -1,0 +1,45 @@
+version: "3.9"
+
+# ── Services ──────────────────────────────────────────────────────────────────
+
+services:
+
+  # ── Redis ───────────────────────────────────────────────────────────────────
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    command: ["redis-server", "--save", "", "--appendonly", "no"]
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - cgs_net
+
+  # ── CGS Runtime Wrapper ──────────────────────────────────────────────────────
+  wrapper:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    environment:
+      # Override REDIS_URL to point at the compose service name
+      REDIS_URL: "redis://redis:6379"
+    depends_on:
+      redis:
+        condition: service_healthy
+    networks:
+      - cgs_net
+
+# ── Network ───────────────────────────────────────────────────────────────────
+
+networks:
+  cgs_net:
+    driver: bridge

@@ -1,0 +1,36 @@
+# ── Python artefacts ──────────────────────────────────────────────────────────
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# ── Tests ─────────────────────────────────────────────────────────────────────
+cgs_runtime_wrapper/tests/
+.pytest_cache/
+.coverage
+htmlcov/
+
+# ── Environment / secrets ─────────────────────────────────────────────────────
+.env
+*.env
+
+# ── Editor / OS artefacts ─────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# ── Version control ───────────────────────────────────────────────────────────
+.git/
+.gitignore
+
+# ── Docs (not needed in image) ────────────────────────────────────────────────
+README.md
+ARCHITECTURE.md
+*.md

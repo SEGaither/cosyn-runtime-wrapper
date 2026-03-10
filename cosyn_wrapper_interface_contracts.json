@@ -1,0 +1,515 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "cgs-runtime-wrapper-interfaces-v1.0.0",
+  "title": "CGS Runtime Wrapper — Interface Contract Specification",
+  "description": "All data envelopes, schemas, and contracts for CGS v14.1.0 runtime wrapper. Version 1.0.0. All other implementation documents depend on these definitions.",
+  "version": "1.0.0",
+  "cgs_version": "14.1.0",
+  "generated": "2026-03-10",
+
+  "definitions": {
+
+    "HaltReasonCode": {
+      "type": "string",
+      "description": "Registry of all halt reason codes. Produced by gates; consumed by routers and callers.",
+      "enum": [
+        "MISSING_REQUIRED_INPUTS",
+        "AMBIGUOUS_INTENT",
+        "CONSTRAINT_CONFLICT",
+        "UNDECLARED_ASSUMPTION",
+        "IMPLICIT_BIAS",
+        "CONFLICTING_BIAS_SIGNALS",
+        "ECHO_REPETITION",
+        "CRS_SCOPE_VIOLATION",
+        "MODE_LOCK_VIOLATION",
+        "CONFIDENCE_INFLATION",
+        "SCOPE_EXCEEDED",
+        "LEXICAL_VIOLATION",
+        "UNRESOLVABLE_DRIFT",
+        "RERENDER_LIMIT_EXCEEDED"
+      ]
+    },
+
+    "GateId": {
+      "type": "string",
+      "enum": ["ICC", "ASTG", "BSG", "EDH", "SPM", "PRAP", "OSCL", "FINALIZATION", "TELEMETRY"],
+      "description": "Valid gate identifiers. Ingress: ICC→ASTG→BSG→EDH→SPM→PRAP. Egress: OSCL→FINALIZATION→TELEMETRY."
+    },
+
+    "GateStatus": {
+      "type": "string",
+      "enum": ["pass", "fail", "halt", "warn", "rerender"],
+      "description": "pass: proceed. fail/halt: stop pipeline. warn: proceed with flag. rerender: return output to model."
+    },
+
+    "FailureClass": {
+      "type": "string",
+      "enum": ["class0", "class1", "none"],
+      "description": "Class 0: immediate halt required (implicit bias, silent assumption, undeclared confidence inflation, undetected echo). Class 1: halt with disclosure and re-execution. none: pass or warn."
+    },
+
+    "BiasFrame": {
+      "type": "string",
+      "enum": [
+        "conversion-optimized",
+        "risk-avoidant",
+        "neutral-descriptive",
+        "dual-track-labeled",
+        "exploratory",
+        "adversarial",
+        "execution-focused"
+      ]
+    },
+
+    "ConstraintConsistency": {
+      "type": "string",
+      "enum": ["consistent", "ambiguous", "conflicting"]
+    },
+
+    "AssumptionStability": {
+      "type": "string",
+      "enum": ["stable", "unstable"],
+      "description": "stable: reasonable to hold without user confirmation. unstable: if false, conclusion changes materially."
+    },
+
+    "EchoType": {
+      "type": "string",
+      "enum": ["semantic_repetition", "premise_reuse", "reaffirmation_without_anchor"]
+    },
+
+    "TelemetryRenderLevel": {
+      "type": "string",
+      "enum": ["minimal", "standard", "full"]
+    },
+
+    "Assumption": {
+      "type": "object",
+      "required": ["assumption_text", "failure_condition", "conclusion_impact", "stability"],
+      "properties": {
+        "assumption_text":     { "type": "string" },
+        "failure_condition":   { "type": "string" },
+        "conclusion_impact":   { "type": "string" },
+        "stability":           { "$ref": "#/definitions/AssumptionStability" }
+      }
+    },
+
+    "EDHBufferEntry": {
+      "type": "object",
+      "required": ["turn_index", "conclusion_embedding", "conclusion_summary"],
+      "properties": {
+        "turn_index":             { "type": "integer", "minimum": 1 },
+        "conclusion_embedding":   {
+          "type": "array",
+          "items": { "type": "number" },
+          "description": "Sentence embedding vector. Model: all-MiniLM-L6-v2 or equivalent. Fixed per session."
+        },
+        "conclusion_summary":     { "type": "string", "description": "Short plain-text summary for audit. Not used in similarity computation." }
+      }
+    },
+
+    "GateResult": {
+      "type": "object",
+      "description": "Returned by every gate. Gates do not throw exceptions on failure — they return a structured result.",
+      "required": [
+        "gate_id", "status", "failure_class", "halt_reason_code",
+        "provisional_flag", "assumption_declared", "fired_at_ms"
+      ],
+      "properties": {
+        "gate_id":            { "$ref": "#/definitions/GateId" },
+        "status":             { "$ref": "#/definitions/GateStatus" },
+        "failure_class":      { "$ref": "#/definitions/FailureClass" },
+        "halt_reason_code":   { "oneOf": [{ "$ref": "#/definitions/HaltReasonCode" }, { "type": "null" }] },
+        "provisional_flag":   { "type": "boolean" },
+        "assumption_declared":{ "type": "boolean" },
+        "rerender_reason":    { "type": ["string", "null"] },
+        "gate_data":          { "type": ["object", "null"], "description": "Gate-specific structured data. Schema defined per gate in gate_data_schemas below." },
+        "fired_at_ms":        { "type": "integer", "description": "Unix timestamp milliseconds." }
+      }
+    },
+
+    "RequestEnvelope": {
+      "type": "object",
+      "description": "Every user turn arriving at the wrapper must be wrapped in this envelope before ingress gate processing begins.",
+      "required": ["session_id", "turn_index", "raw_input", "wrapper_version", "cgs_version"],
+      "properties": {
+        "session_id":       { "type": "string", "description": "Unique session identifier. Used as state store key." },
+        "turn_index":       { "type": "integer", "minimum": 1, "description": "1-based. Incremented by wrapper, not caller." },
+        "raw_input":        { "type": "string", "description": "Verbatim user message text. Unmodified." },
+        "crs_scope":        { "type": ["string", "null"], "default": null },
+        "crs_strict_mode":  { "type": "boolean", "default": false },
+        "spm_suppress":     { "type": "boolean", "default": false },
+        "mode_lock":        { "type": ["string", "null"], "default": null },
+        "persona_override": { "type": ["string", "null"], "default": null },
+        "wrapper_version":  { "type": "string" },
+        "cgs_version":      { "type": "string" }
+      }
+    },
+
+    "IngressPipelineEnvelope": {
+      "type": "object",
+      "description": "Assembled by ingress router after all pre-reasoning gates evaluated. Passed to model if pipeline_status is proceed.",
+      "required": [
+        "request", "gate_results", "pipeline_status",
+        "halt_response", "model_prompt", "active_persona", "ingress_completed_at_ms"
+      ],
+      "properties": {
+        "request":                { "$ref": "#/definitions/RequestEnvelope" },
+        "gate_results":           { "type": "array", "items": { "$ref": "#/definitions/GateResult" }, "description": "ICC, ASTG, BSG, EDH, SPM, PRAP in execution order." },
+        "pipeline_status":        { "type": "string", "enum": ["proceed", "halt", "clarify"] },
+        "halt_response":          { "type": ["string", "null"] },
+        "model_prompt":           { "type": ["string", "null"], "description": "Populated when pipeline_status is proceed. Three sections: system governance block, state annotation block, user input." },
+        "spm_output":             { "type": ["string", "null"], "description": "Populated when SPM fires this turn." },
+        "active_persona":         { "type": "string" },
+        "ingress_completed_at_ms":{ "type": "integer" }
+      }
+    },
+
+    "ModelResponseEnvelope": {
+      "type": "object",
+      "description": "Raw model output wrapped for egress gate processing.",
+      "required": ["raw_output", "ingress_envelope", "rerender_count", "rerender_reason_history", "model_completed_at_ms"],
+      "properties": {
+        "raw_output":               { "type": "string", "description": "Verbatim model response. Unmodified." },
+        "ingress_envelope":         { "$ref": "#/definitions/IngressPipelineEnvelope" },
+        "rerender_count":           { "type": "integer", "minimum": 0 },
+        "rerender_reason_history":  { "type": "array", "items": { "type": "string" } },
+        "model_completed_at_ms":    { "type": "integer" }
+      }
+    },
+
+    "OutputEnvelope": {
+      "type": "object",
+      "description": "Final envelope assembled after all egress gates pass. Emitted to caller.",
+      "required": [
+        "session_id", "turn_index", "emission", "pipeline_status",
+        "gate_results_egress", "telemetry_payload", "provisional",
+        "spm_fired_this_turn", "halt_response", "rerender_count",
+        "turn_completed_at_ms", "latency_ms"
+      ],
+      "properties": {
+        "session_id":           { "type": "string" },
+        "turn_index":           { "type": "integer" },
+        "emission":             { "type": "string", "description": "Final user-facing text after all gate processing and header injection." },
+        "pipeline_status":      { "type": "string", "enum": ["emitted", "halted", "rerender_limit_exceeded"] },
+        "gate_results_egress":  { "type": "array", "items": { "$ref": "#/definitions/GateResult" } },
+        "telemetry_payload":    { "$ref": "#/definitions/TelemetryTurnRecord" },
+        "provisional":          { "type": "boolean" },
+        "spm_fired_this_turn":  { "type": "boolean" },
+        "halt_response":        { "type": ["string", "null"] },
+        "rerender_count":       { "type": "integer" },
+        "turn_completed_at_ms": { "type": "integer" },
+        "latency_ms":           { "type": "integer" }
+      }
+    },
+
+    "HaltResponse": {
+      "type": "object",
+      "description": "Returned to caller when pipeline_status is halt or clarify.",
+      "required": ["type", "halt_reason_code", "user_facing_text", "gate_id", "session_id", "turn_index"],
+      "properties": {
+        "type":             { "type": "string", "enum": ["halt", "clarify", "scp", "rerender_limit"] },
+        "halt_reason_code": { "$ref": "#/definitions/HaltReasonCode" },
+        "user_facing_text": { "type": "string" },
+        "missing_inputs":   { "type": ["array", "null"], "items": { "type": "string" } },
+        "gate_id":          { "$ref": "#/definitions/GateId" },
+        "session_id":       { "type": "string" },
+        "turn_index":       { "type": "integer" }
+      }
+    },
+
+    "SessionState": {
+      "type": "object",
+      "description": "Persisted in session store keyed by session_id. Read at ingress start; written at egress completion each turn.",
+      "required": [
+        "session_id", "cgs_version", "wrapper_version", "turn_index",
+        "spm_signal_a_turns", "spm_signal_b_turns", "spm_signal_c_turns",
+        "spm_fired", "spm_suppress", "ccd_confidence_register",
+        "edh_buffer", "edh_fired", "crs_strict_mode",
+        "active_persona", "session_started_at_ms", "ttl_seconds"
+      ],
+      "properties": {
+        "session_id":                   { "type": "string" },
+        "cgs_version":                  { "type": "string" },
+        "wrapper_version":              { "type": "string" },
+        "turn_index":                   { "type": "integer", "minimum": 0 },
+        "spm_signal_a_turns":           { "type": "array", "items": { "type": "integer" } },
+        "spm_signal_b_turns":           { "type": "array", "items": { "type": "integer" } },
+        "spm_signal_c_turns":           { "type": "array", "items": { "type": "integer" } },
+        "spm_fired":                    { "type": "boolean", "default": false },
+        "spm_fired_at_turn":            { "type": ["integer", "null"], "default": null },
+        "spm_suppress":                 { "type": "boolean", "default": false },
+        "spm_window_reset_at_turn":     { "type": ["integer", "null"], "default": null },
+        "ccd_confidence_register":      { "type": "number", "minimum": 0.0, "maximum": 1.0, "default": 0.7 },
+        "edh_buffer":                   { "type": "array", "items": { "$ref": "#/definitions/EDHBufferEntry" }, "maxItems": 10 },
+        "edh_fired":                    { "type": "boolean", "default": false },
+        "mode_lock":                    { "type": ["string", "null"], "default": null },
+        "crs_scope":                    { "type": ["string", "null"], "default": null },
+        "crs_strict_mode":              { "type": "boolean", "default": false },
+        "active_persona":               { "type": "string", "default": "Core" },
+        "session_started_at_ms":        { "type": "integer" },
+        "last_turn_completed_at_ms":    { "type": ["integer", "null"], "default": null },
+        "ttl_seconds":                  { "type": "integer", "default": 3600 }
+      }
+    },
+
+    "TelemetryTurnRecord": {
+      "type": "object",
+      "description": "Per-turn telemetry record. Schema enforced at write time — non-schema fields rejected.",
+      "required": [
+        "session_id", "turn_index", "personas_invoked", "synthesis_mode",
+        "gate_triggers_fired", "halt_triggered", "halt_reason_code",
+        "rerender_requested", "rerender_count", "provisional_labeling_count",
+        "assumption_block_present", "numeric_claims_count",
+        "numeric_claims_with_basis_count", "scope_violation_flags",
+        "spm_signal_a_count", "spm_signal_b_count", "spm_signal_c_count",
+        "spm_threshold_crossed", "spm_fired", "spm_dispute_event",
+        "spm_dispute_signal_classification", "latency_ms",
+        "classifier_latency_ms", "model_latency_ms"
+      ],
+      "properties": {
+        "session_id":                       { "type": "string" },
+        "turn_index":                       { "type": "integer" },
+        "personas_invoked":                 { "type": "array", "items": { "type": "string" } },
+        "synthesis_mode":                   { "type": "boolean" },
+        "gate_triggers_fired":              { "type": "array", "items": { "$ref": "#/definitions/GateId" } },
+        "halt_triggered":                   { "type": "boolean" },
+        "halt_reason_code":                 { "oneOf": [{ "$ref": "#/definitions/HaltReasonCode" }, { "type": "null" }] },
+        "rerender_requested":               { "type": "boolean" },
+        "rerender_count":                   { "type": "integer" },
+        "provisional_labeling_count":       { "type": "integer" },
+        "assumption_block_present":         { "type": "boolean" },
+        "numeric_claims_count":             { "type": "integer" },
+        "numeric_claims_with_basis_count":  { "type": "integer" },
+        "scope_violation_flags":            { "type": "array", "items": { "type": "string" } },
+        "spm_signal_a_count":               { "type": "integer" },
+        "spm_signal_b_count":               { "type": "integer" },
+        "spm_signal_c_count":               { "type": "integer" },
+        "spm_threshold_crossed":            { "type": "boolean" },
+        "spm_fired":                        { "type": "boolean" },
+        "spm_dispute_event":                { "type": "boolean" },
+        "spm_dispute_signal_classification":{ "type": ["string", "null"] },
+        "latency_ms":                       { "type": "integer" },
+        "classifier_latency_ms":            { "type": "integer" },
+        "model_latency_ms":                 { "type": "integer" }
+      },
+      "additionalProperties": false
+    },
+
+    "TelemetrySessionRollup": {
+      "type": "object",
+      "required": [
+        "session_id", "total_turns", "halt_rate", "rerender_rate",
+        "provisional_rate", "assumption_rate", "spm_fire_count",
+        "spm_dispute_count", "spm_retraction_count",
+        "class0_failure_count", "class1_failure_count",
+        "governance_regression_flag"
+      ],
+      "properties": {
+        "session_id":                   { "type": "string" },
+        "total_turns":                  { "type": "integer" },
+        "halt_rate":                    { "type": "number", "minimum": 0, "maximum": 1 },
+        "rerender_rate":                { "type": "number", "minimum": 0, "maximum": 1 },
+        "provisional_rate":             { "type": "number", "minimum": 0, "maximum": 1 },
+        "assumption_rate":              { "type": "number", "minimum": 0, "maximum": 1 },
+        "numeric_basis_ratio":          { "type": ["number", "null"] },
+        "spm_fire_count":               { "type": "integer" },
+        "spm_dispute_count":            { "type": "integer" },
+        "spm_retraction_count":         { "type": "integer" },
+        "class0_failure_count":         { "type": "integer" },
+        "class1_failure_count":         { "type": "integer" },
+        "governance_regression_flag":   { "type": "boolean" }
+      },
+      "additionalProperties": false
+    },
+
+    "StateAnnotationBlock": {
+      "type": "object",
+      "description": "Injected between system governance block and user input in the model prompt. Format: KEY: VALUE one per line.",
+      "required": [
+        "TURN_INDEX", "SPM_SIGNAL_A_COUNT", "SPM_SIGNAL_B_COUNT",
+        "SPM_SIGNAL_C_COUNT", "SPM_FIRED_THIS_SESSION",
+        "CCD_CONFIDENCE_REGISTER", "EDH_ECHO_FLAG",
+        "PRAP_STATUS", "MODE_LOCK", "ACTIVE_PERSONA"
+      ],
+      "properties": {
+        "TURN_INDEX":               { "type": "integer" },
+        "SPM_SIGNAL_A_COUNT":       { "type": "integer" },
+        "SPM_SIGNAL_B_COUNT":       { "type": "integer" },
+        "SPM_SIGNAL_C_COUNT":       { "type": "integer" },
+        "SPM_FIRED_THIS_SESSION":   { "type": "boolean" },
+        "CCD_CONFIDENCE_REGISTER":  { "type": "number", "minimum": 0.0, "maximum": 1.0 },
+        "EDH_ECHO_FLAG":            { "type": "boolean" },
+        "PRAP_STATUS":              { "type": "string", "enum": ["pass", "fail"] },
+        "MODE_LOCK":                { "type": "string", "description": "Mode name or 'none'." },
+        "ACTIVE_PERSONA":           { "type": "string" }
+      }
+    },
+
+    "gate_data_schemas": {
+      "description": "GateResult.gate_data schemas keyed by gate_id.",
+
+      "ICC": {
+        "type": "object",
+        "required": ["intent_primary", "constraint_consistency", "provisional_flag"],
+        "properties": {
+          "intent_primary":                 { "type": "string" },
+          "intent_scope":                   { "type": ["string", "null"] },
+          "intent_exclusions":              { "type": "array", "items": { "type": "string" } },
+          "intent_output_form":             { "type": ["string", "null"] },
+          "constraint_consistency":         { "$ref": "#/definitions/ConstraintConsistency" },
+          "ambiguity_description":          { "type": ["string", "null"] },
+          "least_committal_interpretation": { "type": ["string", "null"] },
+          "provisional_flag":               { "type": "boolean" }
+        }
+      },
+
+      "ASTG": {
+        "type": "object",
+        "required": ["assumptions_identified", "assumption_count", "unstable_assumption_present"],
+        "properties": {
+          "assumptions_identified":       { "type": "array", "items": { "$ref": "#/definitions/Assumption" } },
+          "assumption_count":             { "type": "integer" },
+          "unstable_assumption_present":  { "type": "boolean" },
+          "assumption_block_text":        { "type": ["string", "null"] }
+        }
+      },
+
+      "BSG": {
+        "type": "object",
+        "required": ["tradeoff_detected", "implicit_bias_detected", "conflicting_signals"],
+        "properties": {
+          "tradeoff_detected":        { "type": "boolean" },
+          "bias_frame_selected":      { "oneOf": [{ "$ref": "#/definitions/BiasFrame" }, { "type": "null" }] },
+          "implicit_bias_detected":   { "type": "boolean" },
+          "conflicting_signals":      { "type": "boolean" }
+        }
+      },
+
+      "EDH": {
+        "type": "object",
+        "required": ["echo_detected", "similarity_score", "forced_reframe_required", "external_anchor_check_triggered", "ecfd_triggered"],
+        "properties": {
+          "echo_detected":                    { "type": "boolean" },
+          "similarity_score":                 { "type": "number", "minimum": 0.0, "maximum": 1.0 },
+          "echo_type":                        { "oneOf": [{ "$ref": "#/definitions/EchoType" }, { "type": "null" }] },
+          "forced_reframe_required":          { "type": "boolean" },
+          "external_anchor_check_triggered":  { "type": "boolean" },
+          "ecfd_triggered":                   { "type": "boolean" }
+        }
+      },
+
+      "SPM": {
+        "type": "object",
+        "required": [
+          "signal_a_this_turn", "signal_b_this_turn", "signal_c_this_turn",
+          "threshold_crossed", "dispute_detected"
+        ],
+        "properties": {
+          "signal_a_this_turn":       { "type": "boolean" },
+          "signal_b_this_turn":       { "type": "boolean" },
+          "signal_c_this_turn":       { "type": "boolean" },
+          "threshold_crossed":        { "type": "boolean" },
+          "spm_output_text":          { "type": ["string", "null"] },
+          "window_turn_range":        { "type": ["array", "null"], "items": { "type": "integer" }, "minItems": 2, "maxItems": 2 },
+          "dispute_detected":         { "type": "boolean" },
+          "dispute_response_text":    { "type": ["string", "null"] }
+        }
+      },
+
+      "PRAP": {
+        "type": "object",
+        "required": ["all_checks_passed", "failed_checks", "scope_satisfiable", "source_fidelity_satisfiable", "mode_lock_viable", "delegation_boundary_clean", "crs_scope_clean"],
+        "properties": {
+          "all_checks_passed":              { "type": "boolean" },
+          "failed_checks":                  { "type": "array", "items": { "type": "string" } },
+          "scope_satisfiable":              { "type": "boolean" },
+          "source_fidelity_satisfiable":    { "type": "boolean" },
+          "mode_lock_viable":               { "type": "boolean" },
+          "delegation_boundary_clean":      { "type": "boolean" },
+          "crs_scope_clean":                { "type": "boolean" }
+        }
+      },
+
+      "OSCL": {
+        "type": "object",
+        "required": ["evidence_alignment", "assumption_minimality", "overclaim_risk_inverse", "user_constraint_adherence", "actionability_clarity", "aggregate_score", "revision_required", "scp_trigger"],
+        "properties": {
+          "evidence_alignment":           { "type": "number", "minimum": 0.0, "maximum": 1.0 },
+          "assumption_minimality":        { "type": "number", "minimum": 0.0, "maximum": 1.0 },
+          "overclaim_risk_inverse":       { "type": "number", "minimum": 0.0, "maximum": 1.0 },
+          "user_constraint_adherence":    { "type": "number", "minimum": 0.0, "maximum": 1.0 },
+          "actionability_clarity":        { "type": "number", "minimum": 0.0, "maximum": 1.0 },
+          "aggregate_score":              { "type": "number", "minimum": 0.0, "maximum": 1.0 },
+          "revision_required":            { "type": "boolean" },
+          "lowest_scoring_axes":          { "type": "array", "items": { "type": "string" } },
+          "scp_trigger":                  { "type": "boolean" }
+        }
+      },
+
+      "FINALIZATION": {
+        "type": "object",
+        "required": ["persona_headers_present", "option_labeling_compliant", "spm_lexical_compliant", "source_fidelity_enforced", "scope_within_bounds", "provisional_status_visible", "ufrs_applied", "sscs_score"],
+        "properties": {
+          "persona_headers_present":      { "type": "boolean" },
+          "option_labeling_compliant":    { "type": "boolean" },
+          "spm_lexical_compliant":        { "type": "boolean" },
+          "lexical_violations_found":     { "type": "array", "items": { "type": "string" } },
+          "source_fidelity_enforced":     { "type": "boolean" },
+          "scope_within_bounds":          { "type": "boolean" },
+          "provisional_status_visible":   { "type": "boolean" },
+          "ufrs_applied":                 { "type": "boolean" },
+          "sscs_score":                   { "type": "number", "minimum": 0.0, "maximum": 1.0 },
+          "final_emission_text":          { "type": ["string", "null"] }
+        }
+      },
+
+      "TELEMETRY": {
+        "type": "object",
+        "required": ["record_written"],
+        "properties": {
+          "record_written": { "type": "boolean" },
+          "write_error":    { "type": ["string", "null"] }
+        }
+      }
+    },
+
+    "APIEndpoints": {
+      "description": "Three endpoints. All JSON request and response bodies.",
+      "POST /turn": {
+        "request":  { "$ref": "#/definitions/RequestEnvelope" },
+        "response": { "$ref": "#/definitions/OutputEnvelope" },
+        "description": "Process one user turn through full ingress/model/egress pipeline."
+      },
+      "POST /telemetry/render": {
+        "request": {
+          "type": "object",
+          "required": ["session_id", "level"],
+          "properties": {
+            "session_id": { "type": "string" },
+            "level":      { "$ref": "#/definitions/TelemetryRenderLevel" },
+            "range":      { "type": "object", "properties": { "from_turn": { "type": "integer" }, "to_turn": { "type": "integer" } } }
+          }
+        },
+        "response": { "type": "string", "description": "Formatted telemetry output." },
+        "description": "Render telemetry for session at specified level."
+      },
+      "POST /session/reset": {
+        "request":  { "type": "object", "required": ["session_id"], "properties": { "session_id": { "type": "string" } } },
+        "response": { "type": "object", "properties": { "status": { "type": "string", "enum": ["ok"] } } },
+        "description": "Reset session state. Called on EOS trigger."
+      }
+    },
+
+    "ErrorResponse": {
+      "type": "object",
+      "description": "Returned on unhandled errors. Gate failures are not errors — they return OutputEnvelope with halt status.",
+      "required": ["error_code", "message"],
+      "properties": {
+        "error_code":   { "type": "string" },
+        "message":      { "type": "string" },
+        "session_id":   { "type": ["string", "null"] },
+        "turn_index":   { "type": ["integer", "null"] }
+      }
+    }
+  }
+}

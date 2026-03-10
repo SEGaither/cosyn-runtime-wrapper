@@ -1,0 +1,189 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "cgs-classifier-labeling-schema-v1.0.0",
+  "title": "CGS Classifier Labeling Schema",
+  "description": "Machine-readable labeling schema for training corpus construction. Companion to doc3_classifier_specification.md. Version 1.0.0.",
+  "version": "1.0.0",
+  "cgs_version": "14.1.0",
+
+  "definitions": {
+
+    "LabelerConfidence": {
+      "type": "string",
+      "enum": ["high", "medium", "low"],
+      "description": "Labeler confidence. Low-confidence examples excluded from training; retained for evaluation set."
+    },
+
+    "ClassifierTarget": {
+      "type": "string",
+      "enum": [
+        "ICC_intent",
+        "ICC_consistency",
+        "ASTG_assumption",
+        "BSG_tradeoff",
+        "SPM_A",
+        "SPM_B",
+        "SPM_C"
+      ]
+    },
+
+    "SPMSignalLabel": {
+      "type": "object",
+      "required": ["signal_present"],
+      "properties": {
+        "signal_present": {
+          "type": "boolean",
+          "description": "True if the signal is present in this turn. False-negative bias: when ambiguous, label false."
+        },
+        "evidence_present": {
+          "type": "boolean",
+          "description": "True if new evidence or new proposition is present in the turn. Required for Signal A and C."
+        },
+        "classification_notes": {
+          "type": "string",
+          "description": "Required when signal_present is true. Identify which markers triggered the classification."
+        }
+      }
+    },
+
+    "ICCIntentLabel": {
+      "type": "object",
+      "required": ["intent_primary", "constraint_consistency"],
+      "properties": {
+        "intent_primary":         { "type": "string" },
+        "intent_scope":           { "type": ["string", "null"] },
+        "intent_exclusions":      { "type": "array", "items": { "type": "string" } },
+        "intent_output_form":     { "type": ["string", "null"] },
+        "constraint_consistency": { "type": "string", "enum": ["consistent", "ambiguous", "conflicting"] },
+        "ambiguity_description":  { "type": ["string", "null"], "description": "Required when constraint_consistency is ambiguous or conflicting." }
+      }
+    },
+
+    "ASTGAssumptionLabel": {
+      "type": "object",
+      "required": ["assumptions", "assumption_count", "unstable_assumption_present"],
+      "properties": {
+        "assumptions": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["assumption_text", "failure_condition", "conclusion_impact", "stability"],
+            "properties": {
+              "assumption_text":     { "type": "string" },
+              "failure_condition":   { "type": "string" },
+              "conclusion_impact":   { "type": "string" },
+              "stability":           { "type": "string", "enum": ["stable", "unstable"] }
+            }
+          }
+        },
+        "assumption_count":             { "type": "integer", "minimum": 0 },
+        "unstable_assumption_present":  { "type": "boolean" }
+      }
+    },
+
+    "BSGTradeoffLabel": {
+      "type": "object",
+      "required": ["tradeoff_present", "tradeoff_type"],
+      "properties": {
+        "tradeoff_present": { "type": "boolean" },
+        "tradeoff_type": {
+          "type": "string",
+          "enum": ["explicit", "implicit", "none"],
+          "description": "explicit: tradeoff language present in input. implicit: tradeoff inferred from domain/context. none: no tradeoff."
+        },
+        "suggested_bias_frame": {
+          "type": ["string", "null"],
+          "enum": ["conversion-optimized", "risk-avoidant", "neutral-descriptive", "dual-track-labeled", "exploratory", "adversarial", "execution-focused", null]
+        }
+      }
+    }
+  },
+
+  "LabeledExample": {
+    "type": "object",
+    "required": ["example_id", "input_text", "classifier_target", "label", "labeler_id", "confidence"],
+    "properties": {
+      "example_id": {
+        "type": "string",
+        "description": "Unique identifier. Format: {target_code}-{sequential_number}. E.g. SPM_A-0042."
+      },
+      "input_text": {
+        "type": "string",
+        "description": "Raw user turn text. No modification."
+      },
+      "classifier_target": {
+        "$ref": "#/definitions/ClassifierTarget"
+      },
+      "label": {
+        "description": "Ground truth output. Schema varies by classifier_target — see definitions.",
+        "oneOf": [
+          { "$ref": "#/definitions/SPMSignalLabel",      "description": "Use when classifier_target is SPM_A, SPM_B, or SPM_C" },
+          { "$ref": "#/definitions/ICCIntentLabel",      "description": "Use when classifier_target is ICC_intent or ICC_consistency" },
+          { "$ref": "#/definitions/ASTGAssumptionLabel", "description": "Use when classifier_target is ASTG_assumption" },
+          { "$ref": "#/definitions/BSGTradeoffLabel",    "description": "Use when classifier_target is BSG_tradeoff" }
+        ]
+      },
+      "labeler_id": {
+        "type": "string",
+        "description": "Anonymized labeler identifier. Do not use real names."
+      },
+      "confidence": {
+        "$ref": "#/definitions/LabelerConfidence"
+      },
+      "notes": {
+        "type": ["string", "null"],
+        "description": "Edge case notes or classification rationale. Required when confidence is low or medium."
+      },
+      "edge_case_flag": {
+        "type": "boolean",
+        "default": false,
+        "description": "True if this example tests a known edge case from the edge case registry (EC-01 through EC-08)."
+      },
+      "edge_case_id": {
+        "type": ["string", "null"],
+        "description": "Edge case registry ID if edge_case_flag is true. E.g. EC-04.",
+        "default": null
+      },
+      "second_labeler_id": {
+        "type": ["string", "null"],
+        "description": "Required before example is admitted to training set. Null until second review complete.",
+        "default": null
+      },
+      "second_labeler_label": {
+        "description": "Second labeler's independent label. Must match schema of primary label field.",
+        "type": ["object", "null"],
+        "default": null
+      },
+      "cohen_kappa": {
+        "type": ["number", "null"],
+        "minimum": -1,
+        "maximum": 1,
+        "description": "Inter-rater reliability between labeler_id and second_labeler_id. Required >= 0.75 for training admission. Null until both labels present.",
+        "default": null
+      },
+      "training_eligible": {
+        "type": "boolean",
+        "description": "Set by labeling pipeline. True when: confidence != low AND cohen_kappa >= 0.75 AND second_labeler_id present.",
+        "default": false
+      },
+      "split": {
+        "type": ["string", "null"],
+        "enum": ["train", "eval", "test", null],
+        "description": "Dataset split assignment. 80% train, 10% eval, 10% test. Balanced across labels within each split.",
+        "default": null
+      }
+    },
+    "additionalProperties": false
+  },
+
+  "CorpusSizeRequirements": {
+    "description": "Minimum labeled examples per classifier before training begins.",
+    "SPM_A": { "minimum": 100, "recommended": 300, "note": "Equal positive/negative balance" },
+    "SPM_B": { "minimum": 100, "recommended": 300, "note": "Equal positive/negative balance" },
+    "SPM_C": { "minimum": 100, "recommended": 300, "note": "Equal positive/negative balance" },
+    "ICC_intent": { "minimum": 500, "recommended": 2000, "note": "Diverse intent types and domains" },
+    "ICC_consistency": { "minimum": 900, "recommended": 1500, "note": "300 per label minimum (consistent/ambiguous/conflicting)" },
+    "ASTG_assumption": { "minimum": 500, "recommended": 2000, "note": "20% minimum zero-assumption examples" },
+    "BSG_tradeoff": { "minimum": 600, "recommended": 800, "note": "200 per label (explicit/implicit/none)" }
+  }
+}
