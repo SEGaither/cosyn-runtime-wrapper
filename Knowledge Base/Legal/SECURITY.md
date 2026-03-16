@@ -1,6 +1,6 @@
-# Security Policy
+Security Policy
 
-## Reporting Vulnerabilities
+Reporting Vulnerabilities
 
 If you discover a security vulnerability please report it privately.
 
@@ -8,34 +8,43 @@ Send reports to:
 
 cosyn.dce@gmail.com
 
-## Alternate Disclosure Channel
-
-If email reporting is unavailable or unresponsive, security vulnerabilities may be reported using GitHub's private security advisory feature.
-
-Steps:
-
-1. Navigate to the repository Security tab
-2. Select "Report a vulnerability"
-3. Submit details privately to maintainers
-
-This channel ensures vulnerabilities can be reported even if primary contact methods fail.
-
-## Responsible Disclosure
+Responsible Disclosure
 
 Please allow reasonable time for investigation and remediation before public disclosure.
 
-## Scope
+Scope
 
 Security issues may include:
 
-- governance bypass vulnerabilities
-- runtime wrapper vulnerabilities
-- authentication weaknesses
-- telemetry integrity flaws
+governance bypass vulnerabilities
 
-## Response Process
+runtime wrapper vulnerabilities
 
-1. Report received
-2. Vulnerability validated
-3. Patch developed
-4. Public disclosure coordinated
+authentication weaknesses
+
+telemetry integrity flaws
+
+Response Process
+
+Report received
+
+Vulnerability validated
+
+Patch developed
+
+Public disclosure coordinated
+
+Beta Evaluation Security Expectations
+
+Organizations participating in beta testing of the CoSyn Runtime Wrapper should:
+
+use isolated testing environments
+
+avoid exposing evaluation endpoints publicly
+
+avoid processing sensitive or regulated production data
+
+report any discovered vulnerabilities through the reporting process above
+
+Evaluation environments should not be used for production workloads.
+
