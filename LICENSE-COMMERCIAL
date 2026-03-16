@@ -77,12 +77,26 @@ COMMERCIAL LICENSE
 
 Commercial use of the Software requires a separate written Commercial License
 Agreement executed with the copyright holder prior to any Commercial use.
+Commercial use includes deployment in revenue generating systems...
+## Production Use Clarification
+
+Use of the CoSyn Runtime Wrapper or associated governance artifacts within operational systems run by any organization, company, or institution constitutes commercial use.
+
+This includes but is not limited to:
+
+- internal enterprise systems
+- SaaS platforms
+- hosted AI services
+- regulated industry deployments
+- production infrastructure
+
+Such use requires a commercial license agreement unless explicitly permitted by the governing license.
 
 To inquire about a Commercial License, contact:
 
   Shane Gaither
-  deepwaterfossils@gmail.com
-  GitHub: https://github.com/SEGaither
+CoSyn.dce@gmail.com or shane.gaither@gmail.com or daychanger.llc@gmail.com
+  GitHub: https://github.com/SEGaither/cosyn-runtime-wrapper
 
 Commercial License inquiries should include:
   - Organization name and description
