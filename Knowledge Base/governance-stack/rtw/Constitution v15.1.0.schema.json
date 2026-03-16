@@ -1,0 +1,31 @@
+{
+  "artifact": {
+    "name": "CoSyn Constitution",
+    "version": "15.1.0",
+    "status": "ratified",
+    "artifact_id": "cosyn-constitution"
+  },
+  "compatibility": {
+    "rtw_required": true
+  },
+  "authority_model": {
+    "hierarchy": [
+      "Constitution",
+      "Governor",
+      "Architect",
+      "Runtime Wrapper (RTW)",
+      "Model"
+    ]
+  },
+  "scope_of_governance": "Epistemic integrity rules for collaborative reasoning systems",
+  "amendment_authority": {
+    "authority": "Creator",
+    "mechanism": "Formal amendment artifact"
+  },
+  "change_log": [
+    {
+      "version": "15.1.0",
+      "summary": "Current ratified constitutional kernel"
+    }
+  ]
+}

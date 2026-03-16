@@ -1,0 +1,45 @@
+{
+  "artifact": {
+    "name": "CoSyn Artifact Manifest",
+    "version": "1.0.0",
+    "artifact_id": "cosyn-artifact-manifest",
+    "status": "active"
+  },
+  "authority_hierarchy": [
+    "Constitution",
+    "Governor",
+    "Architect",
+    "Runtime Wrapper (RTW)",
+    "Model"
+  ],
+  "artifacts": {
+    "constitution": {
+      "name": "CoSyn Constitution",
+      "version": "15.1.0",
+      "canonical_format": "markdown",
+      "file": "cosyn-constitution-v15.1.0.md"
+    },
+    "governor": {
+      "name": "Persona Governor",
+      "version": "3.15.0",
+      "canonical_format": "json",
+      "file": "Persona Governor v3.15.0.json"
+    },
+    "architect": {
+      "name": "Stack Architect",
+      "version": "3.16.0",
+      "canonical_format": "json",
+      "file": "Stack Architect v3.16.0.json"
+    }
+  },
+  "canonical_source_authority": {
+    "tiers": [
+      "User / Business / Enterprise Authority",
+      "Creator Authority",
+      "Execution Environment Authority",
+      "Accepted Common Knowledge",
+      "Model Inference"
+    ]
+  },
+  "runtime_requirement": "RTW-compliant runtime required"
+}

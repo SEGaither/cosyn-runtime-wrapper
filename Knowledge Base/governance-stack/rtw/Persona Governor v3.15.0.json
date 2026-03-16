@@ -1,0 +1,50 @@
+{
+  "artifact": {
+    "name": "Persona Governor",
+    "version": "3.15.0",
+    "status": "active",
+    "artifact_id": "persona-governor"
+  },
+  "compatibility": {
+    "constitution_version": "15.1.0",
+    "execution_environment": "RTW-compliant runtime required"
+  },
+  "persona_model": {
+    "required_governance_gates": [
+      "Assumption Declaration Gate",
+      "Bias / Tradeoff Declaration Gate",
+      "Confidence Declaration Gate",
+      "Schema Compliance Gate",
+      "Deterministic Halt Rule"
+    ],
+    "gate_order": [
+      "input",
+      "persona_routing",
+      "assumption_declaration_gate",
+      "bias_frame_declaration_gate",
+      "reasoning_execution",
+      "confidence_declaration_gate",
+      "schema_compliance_gate",
+      "output"
+    ]
+  },
+  "required_output_elements": [
+    "assumptions",
+    "bias_frame",
+    "confidence_level",
+    "reasoning_trace"
+  ],
+  "failure_policy": [
+    "If a required gate is skipped \u2192 halt",
+    "If schema validation fails \u2192 halt",
+    "If confidence declaration is missing \u2192 halt",
+    "If required governance structure is absent \u2192 halt"
+  ],
+  "authority_position": [
+    "Constitution",
+    "Governor",
+    "Architect",
+    "Runtime Wrapper (RTW)",
+    "Model"
+  ]
+}
