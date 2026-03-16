@@ -296,6 +296,25 @@ Contact the project maintainer for enterprise licensing.
 
 ---
 
+## Intellectual Property and Patent Policy
+
+Certain architectural concepts implemented in the CoSyn Runtime Wrapper may qualify for patent protection or defensive publication.
+
+The project maintains a documented patent and defensive publication strategy.
+
+See:
+
+PATENTS.md
+
+for details regarding:
+
+- defensive publication strategy
+- patent candidate categories
+- contributor notice regarding patent inclusion
+- commercial patent licensing boundaries
+
+---
+
 # Trademark Notice
 
 CoSyn is a governance framework and runtime architecture created by the project author. The name and associated marks may be protected under trademark law.
