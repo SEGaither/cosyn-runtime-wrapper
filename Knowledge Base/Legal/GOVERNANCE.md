@@ -16,6 +16,19 @@ These artifacts define:
 - enforcement gates
 - execution architecture
 
+## Governance Artifact Ownership
+
+The CoSyn Constitution and associated governance artifacts are copyrighted works of the project author.
+
+These artifacts include but are not limited to:
+
+- CoSyn Constitution
+- Persona Governor
+- Stack Architect
+- Governance protocols and enforcement architecture
+
+Forks or derivative projects may implement compatible governance mechanisms but may not claim ownership of the original constitutional artifacts.
+
 ## Authority Hierarchy
 
 1. CoSyn Constitution
