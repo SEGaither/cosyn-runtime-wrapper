@@ -1,0 +1,79 @@
+{
+  "name": "bindngo_companion_profile",
+  "version": "1.5.0",
+  "purpose": "Companion configuration profile that extends the canonical bindngo specification without duplicating it. This file supplies deployment-time routing preferences and profile-level overrides. Load canonical bindngo first, then apply this profile as a deterministic overlay.",
+  "extends": {
+    "base_artifact": "bindngo v1.5.0 CGS v14.1.0.json",
+    "merge_strategy": "deep_merge_overlay",
+    "precedence": "base_then_profile",
+    "compatibility_requirement": {
+      "name": "bindngo",
+      "version": "1.5.0"
+    }
+  },
+  "profile_identity": {
+    "profile_name": "adaptive_routing_default",
+    "profile_type": "routing_overlay",
+    "status": "active"
+  },
+  "overrides": {
+    "auto_persona_routing": {
+      "default_policy": "adaptive",
+      "policy_definitions": {
+        "strict": "Router must select a persona every turn. Halt on ambiguity, multi-domain requests, or insufficient routing confidence.",
+        "adaptive": "Core executes by default unless a specialized persona is clearly required by query context."
+      },
+      "policy_selection_rule": "Use adaptive by default unless the user explicitly selects strict.",
+      "adaptive_routing_rule": "If specialization confidence is high and the request is single-domain, route to the specialized executor persona. Otherwise route to Core."
+    },
+    "router_executor_separation": {
+      "executor": {
+        "selection_rule": "Router selects exactly one executor persona per turn. Default policy is adaptive: Core executes unless the query context clearly requires a specialized executor or the user explicitly invokes a different executor."
+      }
+    },
+    "binding_output_requirements": {
+      "on_bind_with_crs_personas": {
+        "required": true,
+        "rule": "When CRS persona ingestion contributes any active executor personas, the binding confirmation must list them as CRS-derived available personas in addition to the activation snapshot.",
+        "format": "labeled list or table"
+      }
+    }
+  },
+  "non_redundancy_contract": {
+    "base_owns": [
+      "governing authority bindings",
+      "context gate",
+      "persona policy",
+      "evidence and assumptions",
+      "execution restrictions",
+      "embedded roster",
+      "evaluation harness defaults",
+      "session pattern monitor defaults"
+    ],
+    "profile_owns": [
+      "default routing policy selection",
+      "routing behavior deltas",
+      "bind-time presentation deltas tied to CRS-derived personas"
+    ],
+    "duplication_rule": "This profile must not restate unchanged base sections. Only include fields that override or extend the canonical bindngo base."
+  },
+  "load_order": [
+    "Load canonical bindngo base artifact.",
+    "Validate base artifact name and version match.",
+    "Apply companion profile overrides with deep merge semantics.",
+    "Use merged result as the active bind configuration."
+  ],
+  "sync": {
+    "synced_to_base_file": "bindngo v1.5.0 CGS v14.1.0.json",
+    "synced_base_version": "1.5.0",
+    "synced_to_cgs": "CGS.v14.1.0",
+    "synced_to_governor": "PersonaGovernor.v2.5.0",
+    "synced_to_architect": "StackArchitect.v2.4.0",
+    "synced_utc": "2026-03-16T00:00:00Z"
+  },
+  "notes": [
+    "This file is a companion overlay, not a second full bindngo artifact.",
+    "Use this profile only after loading the canonical bindngo base artifact.",
+    "Adaptive routing is the default behavior supplied by this overlay."
+  ]
+}
