@@ -1,3 +1,11 @@
+Copyright (c) 2026
+
+CoSyn Runtime Wrapper
+
+All rights reserved.
+
+This file is part of the CoSyn governance runtime environment.
+
 # Persona Governor v2.4.2
 
 Compatibility - CoSyn Constitution v15.1.0 - Execution environment: RTW
