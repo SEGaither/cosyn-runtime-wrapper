@@ -1,302 +1,352 @@
-# CGS Runtime Wrapper
+# CoSyn Runtime Wrapper (CGS Runtime Wrapper)
 
-FastAPI + Redis implementation of the Cosyn Governance Stack (CGS) v14.1.0 runtime wrapper.
-Covers all 8 build phases from the action list. Model-based classifier components are stubs pending training corpus completion — see [Stub Disclosure](#stub-disclosure).
+Runtime governance environment enforcing the **CoSyn Governance Stack (CGS) v14.1.0** on every AI interaction.
 
----
+The runtime wrapper places AI models **inside a deterministic governance pipeline** that enforces reasoning discipline before and after model execution.
 
-## CoSyn Governance Stack — Background
-
-The CGS Runtime Wrapper implements the CoSyn Governance Stack (CGS) v14.1.0. The full whitepaper corpus — covering the constitutional architecture, design rationale, and comparisons with other governance approaches — is published at:
-
-**[CoSyn Governance Whitepaper Corpus](https://github.com/SEGaither/cosyn-governance/tree/main/docs)**
+Unlike prompt guardrails, policy engines, or tool-call security layers, CoSyn governs the **reasoning process itself**.
 
 ---
 
-## Table of contents
+# What CoSyn Is
 
-1. [Prerequisites](#prerequisites)
-2. [Installation — local run](#installation--local-run)
-3. [Running with Docker](#running-with-docker)
-4. [Authentication](#authentication)
-5. [Rate limiting](#rate-limiting)
-6. [API endpoints](#api-endpoints)
-7. [Gate architecture overview](#gate-architecture-overview)
-8. [Stub disclosure](#stub-disclosure)
-9. [Adapter extension guide](#adapter-extension-guide)
-10. [Running tests](#running-tests)
-11. [Environment variable reference](#environment-variable-reference)
+CoSyn is a **runtime governance operating environment for AI systems**.
+
+Every interaction passes through a structured governance pipeline:
+
+```
+User
+  ↓
+Ingress Governance Gates
+  ↓
+LLM Reasoning
+  ↓
+Egress Governance Gates
+  ↓
+User Response + Telemetry Ledger
+```
+
+The model does not operate freely.
+It operates **inside the CoSyn governance pipeline**.
+
+The wrapper enforces:
+
+• explicit interpretation of user intent
+• identification of hidden assumptions
+• bias and optimization frame declaration
+• reasoning outcome scoring
+• structured response compliance
+• full telemetry audit trail
 
 ---
 
-## Prerequisites
+# Why Runtime Governance Is Necessary
+
+AI safety approaches typically operate at one of three layers:
+
+| Approach          | Enforcement Layer        |
+| ----------------- | ------------------------ |
+| Prompt guardrails | Input / output text      |
+| Policy engines    | Model output evaluation  |
+| Tool contracts    | Tool invocation boundary |
+
+These approaches leave the **reasoning pipeline itself ungoverned**.
+
+CoSyn addresses this gap by enforcing governance **before and after reasoning occurs**.
+
+---
+
+# How CoSyn Differs From Other Systems
+
+| System    | Governance Layer                                                |
+| --------- | --------------------------------------------------------------- |
+| SmythOS   | Agent workflow orchestration                                    |
+| SAFi      | Policy enforcement on model outputs                             |
+| CORE      | Constitutional governance for AI-assisted development workflows |
+| Edictum   | Deterministic contracts on tool calls                           |
+| **CoSyn** | Governance of the AI reasoning pipeline                         |
+
+CoSyn governs the **cognitive structure of AI interactions**, not just the actions or outputs.
+
+---
+
+# CoSyn Governance Stack (CGS)
+
+The runtime wrapper implements the **CoSyn Governance Stack (CGS) v14.1.0**.
+
+The full whitepaper corpus — describing the constitutional architecture and governance design — is available here:
+
+**CoSyn Governance Whitepaper Corpus**
+
+---
+
+# Architecture Overview
+
+The runtime wrapper acts as **governance middleware** between the user and the AI model.
+
+```
+User
+  ↓
+FastAPI Runtime Wrapper
+  ↓
+Ingress Governance Gates
+  ↓
+Model Adapter
+  ↓
+Egress Governance Gates
+  ↓
+Telemetry Store
+  ↓
+Response
+```
+
+Components:
+
+• FastAPI runtime service
+• Redis session state store
+• ingress governance gates
+• egress governance gates
+• model adapter layer
+• telemetry audit system
+
+---
+
+# Gate Architecture
+
+The pipeline contains **two governance stages**.
+
+## Ingress Gates (Pre-Reasoning)
+
+These gates execute **before the model runs**.
+
+| Gate | Purpose                                                                        | Implementation     |
+| ---- | ------------------------------------------------------------------------------ | ------------------ |
+| ICC  | Interpretive Commitment Control — parse intent and detect constraint conflicts | Stub (model-based) |
+| ASTG | Assumption Stress Test — enumerate hidden premises                             | Stub (model-based) |
+| BSG  | Bias Selection Gate — require explicit optimization frame                      | Partial rules      |
+| EDH  | Echo Detection Heuristic — detect repetition patterns                          | Stub (embedding)   |
+| SPM  | Session Pattern Monitor — detect emerging interaction signals                  | Rules              |
+| PRAP | Pre-Reasoning Assurance Protocol — aggregate gate outcomes                     | Rules              |
+
+Ingress halts immediately if any gate fails.
+
+---
+
+## Egress Gates (Post-Reasoning)
+
+These gates execute **after the model returns**.
+
+| Gate         | Purpose                           | Implementation |
+| ------------ | --------------------------------- | -------------- |
+| OSCL         | Outcome-Scored Self-Critique Loop | Stub           |
+| FINALIZATION | Structured output validation      | Rules          |
+| TELEMETRY    | Audit logging                     | Full           |
+
+The FINALIZATION gate enforces:
+
+• structured response format
+• scope compliance
+• lexical compliance
+• option labeling discipline
+• governance stack rules
+
+---
+
+# Telemetry and Auditability
+
+Each interaction generates a **TelemetryTurnRecord** containing:
+
+• gate outcomes
+• model latency
+• reasoning metadata
+• session state
+• compliance results
+
+Telemetry can be rendered using:
+
+```
+POST /telemetry/render
+```
+
+Supported levels:
+
+```
+minimal
+standard
+full
+```
+
+---
+
+# Special Governance Handlers
+
+The runtime includes special command handlers:
+
+| Signal                            | Behavior                 |
+| --------------------------------- | ------------------------ |
+| NFAR / no further action required | Output: `Standing by.`   |
+| EOS                               | Session snapshot + reset |
+| Trace This                        | Emit audit ledger        |
+
+---
+
+# Stub Disclosure
+
+The following components are **placeholders pending training corpus completion**.
+
+| Component       | File                          | Stub Behavior                 |
+| --------------- | ----------------------------- | ----------------------------- |
+| ICC classifier  | classifier/icc_classifier.py  | generic intent classification |
+| ASTG classifier | classifier/astg_classifier.py | no assumptions detected       |
+| EDH similarity  | classifier/edh_similarity.py  | similarity score 0            |
+| OSCL scorer     | egress/gates/oscl.py          | fixed score 0.85              |
+
+Rules-based governance gates are **fully implemented**.
+
+---
+
+# Prerequisites
 
 | Requirement | Version |
-|---|---|
-| Python | 3.11+ |
-| Redis | 6+ (7-alpine used in Docker) |
-| pip | 23+ |
+| ----------- | ------- |
+| Python      | 3.11+   |
+| Redis       | 6+      |
+| pip         | 23+     |
 
 ---
 
-## Installation — local run
+# Installation — Local Run
 
-```bash
-# 1. Clone or copy the project into your working directory
+```
 cd <project-root>
 
-# 2. Create and activate a virtual environment
 python -m venv .venv
-source .venv/bin/activate        # Windows: .venv\Scripts\activate
+source .venv/bin/activate
 
-# 3. Install dependencies
 pip install -r requirements.txt
-pip install -e .                 # installs the cgs_runtime_wrapper package
+pip install -e .
 
-# 4. Configure environment
 cp .env.example .env
-# Edit .env — set CGS_API_KEY and REDIS_URL at minimum
 
-# 5. Start Redis (if not already running)
 redis-server --daemonize yes
 
-# 6. Start the API server
 uvicorn cgs_runtime_wrapper.api.main:app --reload --port 8000
 ```
 
-The server is now available at `http://localhost:8000`.
+Server runs at:
+
+```
+http://localhost:8000
+```
 
 ---
 
-## Running with Docker
+# Running with Docker
 
-```bash
-# 1. Configure environment
+```
 cp .env.example .env
-# Edit .env — set CGS_API_KEY (REDIS_URL is overridden by compose)
 
-# 2. Build and start both services
 docker compose up --build
+```
 
-# Tear down
+Services:
+
+| Service         | Port |
+| --------------- | ---- |
+| Redis           | 6379 |
+| Runtime Wrapper | 8000 |
+
+Shutdown:
+
+```
 docker compose down
 ```
 
-- The `redis` service runs on port `6379` (host-accessible).
-- The `wrapper` service runs on port `8000` (host-accessible).
-- The wrapper will not start until Redis passes its healthcheck.
-
 ---
 
-## Authentication
+# Authentication
 
-Every request must include the `X-API-Key` header.
+All requests must include an API key.
 
-```bash
-curl -X POST http://localhost:8000/turn \
-  -H "Content-Type: application/json" \
-  -H "X-API-Key: your-api-key" \
-  -d '{ ... }'
+Header:
+
+```
+X-API-Key
 ```
 
-| Response | Meaning |
-|---|---|
-| `401 UNAUTHORIZED` | Header absent or key does not match `CGS_API_KEY` |
-| `500 SERVER_MISCONFIGURED` | `CGS_API_KEY` environment variable is not set |
+Example:
 
-Set `CGS_API_KEY` in `.env` before starting the server.
-
----
-
-## Rate limiting
-
-`POST /turn` is rate-limited per `session_id`.
-
-| Variable | Default | Description |
-|---|---|---|
-| `RATE_LIMIT_RPM` | `60` | Maximum requests per session per minute |
-
-When the limit is exceeded the server returns `429 RATE_LIMIT_EXCEEDED` with a JSON body describing the session and limit. The counter resets automatically each calendar minute.
-
-All other endpoints (`/telemetry/render`, `/session/reset`) are not rate-limited.
+```
+curl -X POST http://localhost:8000/turn \
+  -H "Content-Type: application/json" \
+  -H "X-API-Key: your-api-key"
+```
 
 ---
 
-## API endpoints
+# API Endpoints
 
-All bodies are JSON. All responses are JSON unless noted.
+## POST `/turn`
 
-### `POST /turn`
+Process one interaction through the governance pipeline.
 
-Process one user turn through the full ingress → model → egress pipeline.
+Example request:
 
-**Request:** `RequestEnvelope`
-
-```json
+```
 {
   "session_id": "sess-abc123",
   "turn_index": 1,
-  "raw_input": "Help me analyse this strategy.",
+  "raw_input": "Help me analyze this strategy.",
   "wrapper_version": "0.1.0",
   "cgs_version": "14.1.0"
 }
 ```
 
-**Response:** `OutputEnvelope` — includes `emission` (user-facing text), `pipeline_status`, full gate results, and telemetry payload.
+---
+
+## POST `/telemetry/render`
+
+Render telemetry records for a session.
 
 ---
 
-### `POST /telemetry/render`
+## POST `/session/reset`
 
-Render telemetry for a session at a specified detail level.
+Reset session state.
 
-**Request:**
-```json
-{
-  "session_id": "sess-abc123",
-  "level": "standard",
-  "range": { "from_turn": 1, "to_turn": 5 }
-}
+---
+
+# Adapter Architecture
+
+Model adapters implement the `ModelAdapter` interface:
+
 ```
-
-`level` values: `minimal` | `standard` | `full`. `range` is optional.
-
-**Response:** Formatted plain-text telemetry string.
-
----
-
-### `POST /session/reset`
-
-Reset session state. Called automatically on `EOS` trigger. Preserves `session_id` in audit log.
-
-**Request:**
-```json
-{ "session_id": "sess-abc123" }
-```
-
-**Response:** `{ "status": "ok" }`
-
----
-
-## Gate architecture overview
-
-The pipeline has two sequential stages: **ingress** and **egress**.
-
-### Ingress gates (pre-reasoning, run before the model)
-
-| Gate | Purpose | Implementation |
-|---|---|---|
-| **ICC** | Interpretive Commitment Control — parse intent, detect constraint conflicts | Stub (model-based) |
-| **ASTG** | Assumption Stress Test — identify all unstated premises with failure conditions | Stub (model-based) |
-| **BSG** | Bias Selection — require explicit optimization frame when tradeoff present | Rules (partial) |
-| **EDH** | Echo Detection Heuristic — cosine similarity against prior turn embeddings | Stub (embedding) |
-| **SPM** | Session Pattern Monitor — accumulate Signal A/B/C, fire observation at threshold | Rules (full) |
-| **PRAP** | Pre-Reasoning Assurance Protocol — aggregate all prior gate results before model call | Rules (full) |
-
-Ingress halts on the first gate failure. Remaining gates do not execute.
-
-### Egress gates (post-reasoning, run after the model returns)
-
-| Gate | Purpose | Implementation |
-|---|---|---|
-| **OSCL** | Outcome-Scored Self-Critique Loop — score output on 5 axes, trigger rerender | Stub (returns 0.85) |
-| **FINALIZATION** | Pre-emission gate — all 8 sub-checks: headers, option labels, lexical compliance, scope, UFRS, SSCS | Rules (full) |
-| **TELEMETRY** | Write `TelemetryTurnRecord` to store; increment `turn_index` | Full |
-
-FINALIZATION triggers a rerender loop (maximum 2 cycles) if any sub-check fails. After 2 cycles without a pass, the pipeline emits `RERENDER_LIMIT_EXCEEDED`.
-
-TELEMETRY is always the last gate. It fires even when the turn ends in halt.
-
-### Special handlers (egress router)
-
-| Signal | Detection | Output |
-|---|---|---|
-| `NFAR` / `no further action required` in model output | String match | Exactly `Standing by.` |
-| `EOS` in model output | String match | Session snapshot + `POST /session/reset` |
-| `Trace This` in user input | String match | Audit ledger from telemetry store |
-
----
-
-## Stub disclosure
-
-The following components are **stubs**. They return structurally valid output but do not perform real classification. They will be replaced when the training corpus is complete.
-
-| Component | File | What the stub returns |
-|---|---|---|
-| ICC classifier | `classifier/icc_classifier.py` | `consistent`, generic intent, no exclusions |
-| ASTG classifier | `classifier/astg_classifier.py` | Zero assumptions identified |
-| EDH similarity | `classifier/edh_similarity.py` | `similarity_score: 0.0`, no echo detected |
-| OSCL scorer | `egress/gates/oscl.py` | All axes at 0.85, `revision_required: False` |
-
-**Prompt templates** for ICC and ASTG are included in their stub files as `ICC_PROMPT_TEMPLATE` and `ASTG_PROMPT_TEMPLATE` constants. These are the exact templates specified in `cosyn_wrapper_classifier_specification.md §3.2 / §4.2`.
-
-**Rules-based components are fully implemented and production-ready:**
-SPM Signal A/B/C classifiers, lexical compliance scanner, option labeling detector, PRAP, FINALIZATION sub-checks.
-
----
-
-## Adapter extension guide
-
-The model adapter is an abstract interface in `adapters/model_adapter.py`.
-
-```python
 class ModelAdapter(ABC):
-    @abstractmethod
     async def call_model(self, prompt: str, session_id: str) -> tuple[str, int]:
-        """Returns (raw_output, latency_ms)."""
 ```
 
-### Switching to Claude
+Supported adapters:
 
-1. Set `MODEL_ADAPTER=claude` in `.env`.
-2. Set `ANTHROPIC_API_KEY=sk-ant-...` in `.env`.
-3. Optionally set `CLAUDE_MODEL=claude-opus-4-6`.
-
-The `ClaudeAPIAdapter` in `model_adapter.py` is a placeholder that calls the Anthropic Messages API. Install the SDK if needed:
-
-```bash
-pip install anthropic
-```
-
-### Implementing a custom adapter
-
-```python
-from cgs_runtime_wrapper.adapters.model_adapter import ModelAdapter
-
-class MyAdapter(ModelAdapter):
-    async def call_model(self, prompt: str, session_id: str) -> tuple[str, int]:
-        start = time.time()
-        response = await my_model_client.complete(prompt)
-        latency_ms = int((time.time() - start) * 1000)
-        return response.text, latency_ms
-```
-
-Pass the adapter instance to `run_egress_pipeline` or replace `_model_adapter` in `api/main.py` lifespan.
+• stub
+• Claude
+• OpenAI
+• custom implementations
 
 ---
 
-## Running tests
+# License
 
-Tests use `FakeRedis` — no live Redis instance required.
+Source Available License v4.
 
-```bash
-# From project root
-pytest
-
-# With coverage
-pip install pytest-cov
-pytest --cov=cgs_runtime_wrapper --cov-report=term-missing
-```
+Non-commercial use permitted.
+Commercial licensing available under `LICENSE-COMMERCIAL`.
 
 ---
 
-## Environment variable reference
+# About
 
-| Variable | Required | Default | Description |
-|---|---|---|---|
-| `CGS_API_KEY` | Yes | — | API key for `X-API-Key` header authentication |
-| `REDIS_URL` | Yes | `redis://localhost:6379` | Redis connection URL |
-| `ANTHROPIC_API_KEY` | No | — | Required when `MODEL_ADAPTER=claude` |
-| `MODEL_ADAPTER` | No | `stub` | `stub` \| `claude` \| `openai` |
-| `CLAUDE_MODEL` | No | `claude-opus-4-6` | Claude model name |
-| `RATE_LIMIT_RPM` | No | `60` | Max `/turn` requests per session per minute |
+FastAPI + Redis governance middleware implementing the **CoSyn Governance Stack runtime pipeline**.
+
+Enforces deterministic ingress and egress governance gates on every LLM interaction.
+
+Audit-traceable. Non-bypassable. Runtime enforced.
