@@ -1,10 +1,24 @@
 # CoSyn Runtime Wrapper (CGS Runtime Wrapper)
 
-Runtime governance environment enforcing the **CoSyn Governance Stack (CGS) v14.1.0** on every AI interaction.
+Runtime governance environment enforcing the **CoSyn Governance Stack (CGS) v15.1.0** on every AI interaction.
 
 The runtime wrapper places AI models **inside a deterministic governance pipeline** that enforces reasoning discipline before and after model execution.
 
 Unlike prompt guardrails, policy engines, or tool-call security layers, CoSyn governs the **reasoning process itself**.
+
+---
+
+# Governance Versions (Runtime Distribution)
+
+The Runtime Wrapper distribution includes the following constitutional artifacts:
+
+| Artifact           | Version |
+| ------------------ | ------- |
+| CoSyn Constitution | v15.1.0 |
+| Persona Governor   | v3.15.0 |
+| Stack Architect    | v3.15.0 |
+
+These artifacts define the governance rules enforced by the runtime wrapper.
 
 ---
 
@@ -14,19 +28,18 @@ CoSyn is a **runtime governance operating environment for AI systems**.
 
 Every interaction passes through a structured governance pipeline:
 
-```
 User
-  ↓
+↓
 Ingress Governance Gates
-  ↓
+↓
 LLM Reasoning
-  ↓
+↓
 Egress Governance Gates
-  ↓
+↓
 User Response + Telemetry Ledger
-```
 
 The model does not operate freely.
+
 It operates **inside the CoSyn governance pipeline**.
 
 The wrapper enforces:
@@ -70,35 +83,23 @@ CoSyn governs the **cognitive structure of AI interactions**, not just the actio
 
 ---
 
-# CoSyn Governance Stack (CGS)
-
-The runtime wrapper implements the **CoSyn Governance Stack (CGS) v14.1.0**.
-
-The full whitepaper corpus — describing the constitutional architecture and governance design — is available here:
-
-**CoSyn Governance Whitepaper Corpus**
-
----
-
 # Architecture Overview
 
 The runtime wrapper acts as **governance middleware** between the user and the AI model.
 
-```
 User
-  ↓
+↓
 FastAPI Runtime Wrapper
-  ↓
+↓
 Ingress Governance Gates
-  ↓
+↓
 Model Adapter
-  ↓
+↓
 Egress Governance Gates
-  ↓
+↓
 Telemetry Store
-  ↓
+↓
 Response
-```
 
 Components:
 
@@ -164,17 +165,13 @@ Each interaction generates a **TelemetryTurnRecord** containing:
 
 Telemetry can be rendered using:
 
-```
 POST /telemetry/render
-```
 
 Supported levels:
 
-```
 minimal
 standard
 full
-```
 
 ---
 
@@ -217,7 +214,6 @@ Rules-based governance gates are **fully implemented**.
 
 # Installation — Local Run
 
-```
 cd <project-root>
 
 python -m venv .venv
@@ -231,23 +227,18 @@ cp .env.example .env
 redis-server --daemonize yes
 
 uvicorn cgs_runtime_wrapper.api.main:app --reload --port 8000
-```
 
 Server runs at:
 
-```
-http://localhost:8000
-```
+[http://localhost:8000](http://localhost:8000)
 
 ---
 
 # Running with Docker
 
-```
 cp .env.example .env
 
 docker compose up --build
-```
 
 Services:
 
@@ -258,9 +249,7 @@ Services:
 
 Shutdown:
 
-```
 docker compose down
-```
 
 ---
 
@@ -270,60 +259,22 @@ All requests must include an API key.
 
 Header:
 
-```
 X-API-Key
-```
 
 Example:
 
-```
-curl -X POST http://localhost:8000/turn \
-  -H "Content-Type: application/json" \
-  -H "X-API-Key: your-api-key"
-```
-
----
-
-# API Endpoints
-
-## POST `/turn`
-
-Process one interaction through the governance pipeline.
-
-Example request:
-
-```
-{
-  "session_id": "sess-abc123",
-  "turn_index": 1,
-  "raw_input": "Help me analyze this strategy.",
-  "wrapper_version": "0.1.0",
-  "cgs_version": "14.1.0"
-}
-```
-
----
-
-## POST `/telemetry/render`
-
-Render telemetry records for a session.
-
----
-
-## POST `/session/reset`
-
-Reset session state.
+curl -X POST [http://localhost:8000/turn](http://localhost:8000/turn) 
+-H "Content-Type: application/json" 
+-H "X-API-Key: your-api-key"
 
 ---
 
 # Adapter Architecture
 
-Model adapters implement the `ModelAdapter` interface:
+Model adapters implement the ModelAdapter interface:
 
-```
 class ModelAdapter(ABC):
-    async def call_model(self, prompt: str, session_id: str) -> tuple[str, int]:
-```
+async def call_model(self, prompt: str, session_id: str) -> tuple[str, int]
 
 Supported adapters:
 
@@ -334,19 +285,27 @@ Supported adapters:
 
 ---
 
-# License
+# Licensing
 
-Source Available License v4.
+This repository is distributed under the **Source Available License v4**.
 
-Non-commercial use permitted.
-Commercial licensing available under `LICENSE-COMMERCIAL`.
+• Non-commercial use permitted.
+• Commercial licensing available under `LICENSE-COMMERCIAL`.
+
+Contact the project maintainer for enterprise licensing.
+
+---
+
+# Trademark Notice
+
+CoSyn is a governance framework and runtime architecture created by the project author. The name and associated marks may be protected under trademark law.
 
 ---
 
 # About
 
-FastAPI + Redis governance middleware implementing the **CoSyn Governance Stack runtime pipeline**.
+FastAPI + Redis governance middleware implementing the **CoSyn runtime governance pipeline**.
 
-Enforces deterministic ingress and egress governance gates on every LLM interaction.
+Deterministic ingress and egress governance gates on every LLM interaction.
 
-Audit-traceable. Non-bypassable. Runtime enforced.
+Audit-traceable. Runtime-enforced. Governance-bound.
