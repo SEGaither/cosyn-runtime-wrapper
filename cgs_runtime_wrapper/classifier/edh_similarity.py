@@ -3,6 +3,10 @@ Phase 3.4 - EDH Embedding Similarity - Production Implementation
 Uses sentence-transformers all-MiniLM-L6-v2 for real semantic similarity.
 Caches the model instance per process. Caches embeddings per session.
 
+When sentence-transformers is not installed, falls back to a zero-vector stub
+that always returns similarity_score=0.0 (no echo detected). This matches the
+per-spec note in edh.py: "EMBEDDING-BASED (stub): similarity_score=0.0".
+
 References:
 - cosyn_wrapper_classifier_specification.md S5
 - cosyn_wrapper_gate_specifications.md EDH gate
@@ -27,28 +31,44 @@ _BUFFER_MAX = 10
 
 _model_lock = threading.Lock()
 _model_instance = None
+_model_is_stub = False  # True when sentence-transformers is unavailable
+
+
+class _StubModel:
+    """
+    Zero-vector stub used when sentence-transformers is not installed.
+    Returns a fixed-dimension zero embedding so the EDH gate can run with
+    similarity_score=0.0 (i.e., no echo detected), matching the spec stub behavior.
+    """
+
+    def encode(self, text: str, normalize_embeddings: bool = True) -> np.ndarray:
+        return np.zeros(_EMBEDDING_DIM, dtype=np.float32)
 
 
 def _get_model():
     """
     Load and cache the SentenceTransformer model. Thread-safe.
-    Raises ImportError if sentence-transformers is not installed.
+    Falls back to a zero-vector stub when sentence-transformers is not installed,
+    emitting a warning rather than raising. The stub produces similarity_score=0.0
+    on every turn, so EDH never fires -- matching the per-spec stub behavior.
     """
-    global _model_instance
+    global _model_instance, _model_is_stub
     if _model_instance is not None:
         return _model_instance
     with _model_lock:
         if _model_instance is not None:
             return _model_instance
         try:
-            from sentence_transformers import SentenceTransformer
+            from sentence_transformers import SentenceTransformer  # type: ignore
             _model_instance = SentenceTransformer(_MODEL_NAME)
             logger.info("EDH: SentenceTransformer model loaded: %s", _MODEL_NAME)
-        except ImportError as exc:
-            raise ImportError(
-                "sentence-transformers is required for EDH similarity. "
-                "Install: pip install sentence-transformers>=2.2.0"
-            ) from exc
+        except (ImportError, ModuleNotFoundError):
+            logger.warning(
+                "EDH: sentence-transformers not available; using zero-vector stub. "
+                "Install 'sentence-transformers>=2.2.0' for real semantic similarity."
+            )
+            _model_instance = _StubModel()
+            _model_is_stub = True
         return _model_instance
 
 
