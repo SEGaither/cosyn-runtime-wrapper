@@ -12,6 +12,7 @@ RateLimiter — FastAPI dependency applied only to POST /turn.
   Returns 429 JSON when limit exceeded.
 """
 from __future__ import annotations
+from cgs_runtime_wrapper.models.envelopes import RequestEnvelope  # noqa: E402
 
 import json
 import math
@@ -102,7 +103,7 @@ class RateLimiter:
     def __init__(self, rpm: Optional[int] = None) -> None:
         self._rpm = rpm or int(os.environ.get("RATE_LIMIT_RPM", str(_RATE_LIMIT_RPM)))
 
-    async def __call__(self, request: Request, request_body: "RequestEnvelope") -> None:  # type: ignore[name-defined]
+    async def __call__(self, request: Request, request_body: RequestEnvelope) -> None:  # type: ignore[name-defined]
         """
         Check and increment the per-session rate limit counter.
         Raises HTTP 429 if the limit is exceeded.
