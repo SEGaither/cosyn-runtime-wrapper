@@ -1,0 +1,43 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Prospect Intake",
+  "type": "object",
+  "required": [
+    "company_name",
+    "industry",
+    "target_roles",
+    "pain_points",
+    "regulated_flag",
+    "delivery_mode"
+  ],
+  "properties": {
+    "company_name": {
+      "type": "string"
+    },
+    "industry": {
+      "type": "string"
+    },
+    "target_roles": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "pain_points": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "regulated_flag": {
+      "type": "boolean"
+    },
+    "delivery_mode": {
+      "enum": [
+        "personal",
+        "virtual",
+        "hybrid"
+      ]
+    }
+  }
+}

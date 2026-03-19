@@ -1,0 +1,116 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Agent Message Contract",
+  "type": "object",
+  "required": [
+    "message_id",
+    "correlation_id",
+    "session_id",
+    "workflow_id",
+    "timestamp_utc",
+    "sender_agent",
+    "recipient_agent",
+    "message_type",
+    "purpose",
+    "payload",
+    "assumptions",
+    "evidence_basis",
+    "confidence",
+    "compliance_state",
+    "required_action",
+    "next_allowed_recipients",
+    "hash_prev",
+    "hash_current"
+  ],
+  "properties": {
+    "message_id": {
+      "type": "string"
+    },
+    "correlation_id": {
+      "type": "string"
+    },
+    "session_id": {
+      "type": "string"
+    },
+    "workflow_id": {
+      "type": "string"
+    },
+    "timestamp_utc": {
+      "type": "string"
+    },
+    "sender_agent": {
+      "type": "string"
+    },
+    "recipient_agent": {
+      "type": "string"
+    },
+    "message_type": {
+      "enum": [
+        "intake",
+        "assessment",
+        "recommendation",
+        "specification",
+        "build_artifact",
+        "compliance_review",
+        "approval",
+        "rejection",
+        "escalation",
+        "delivery_package",
+        "ledger_notice"
+      ]
+    },
+    "purpose": {
+      "type": "string"
+    },
+    "input_refs": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "payload": {
+      "type": "object"
+    },
+    "assumptions": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "evidence_basis": {
+      "type": "array",
+      "items": {
+        "enum": [
+          "user_provided",
+          "derived_from_user_input",
+          "internal_rule_evaluation",
+          "external_authoritative",
+          "unverified"
+        ]
+      }
+    },
+    "confidence": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1
+    },
+    "compliance_state": {
+      "type": "object"
+    },
+    "required_action": {
+      "type": "string"
+    },
+    "next_allowed_recipients": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "hash_prev": {
+      "type": "string"
+    },
+    "hash_current": {
+      "type": "string"
+    }
+  }
+}
