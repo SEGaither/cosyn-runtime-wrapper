@@ -44,7 +44,12 @@ class APIKeyMiddleware(BaseHTTPMiddleware):
     application startup); if it is empty the middleware rejects all calls.
     """
 
+    _OPEN_PATHS = {"/docs", "/openapi.json", "/redoc"}
+
     async def dispatch(self, request: Request, call_next) -> Response:
+        if request.url.path in self._OPEN_PATHS:
+            return await call_next(request)
+
         api_key = request.headers.get("X-API-Key", "")
         expected = os.environ.get("CGS_API_KEY", _API_KEY)
 
