@@ -1,0 +1,48 @@
+{
+  "title": "RTW Build Telemetry Schema",
+  "type": "object",
+  "required": [
+    "event_type",
+    "build_session_id",
+    "timestamp"
+  ],
+  "properties": {
+    "event_type": {
+      "type": "string"
+    },
+    "build_session_id": {
+      "type": "string"
+    },
+    "timestamp": {
+      "type": "string"
+    },
+    "main_agent_status": {
+      "type": "string"
+    },
+    "sub_agent_role": {
+      "type": "string"
+    },
+    "task_id": {
+      "type": "string"
+    },
+    "target_files": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "validation_result": {
+      "type": "string"
+    },
+    "merge_decision": {
+      "type": "string"
+    },
+    "completion_state": {
+      "type": "string"
+    },
+    "halt_reason_code": {
+      "type": "string"
+    }
+  },
+  "additionalProperties": true
+}
