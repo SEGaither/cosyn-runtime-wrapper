@@ -1,0 +1,38 @@
+{
+  "title": "RTW Agentic Build Config Schema",
+  "type": "object",
+  "required": [
+    "execution_mode",
+    "strict_governance",
+    "package_flat",
+    "architecture_target"
+  ],
+  "properties": {
+    "execution_mode": {
+      "type": "string",
+      "enum": [
+        "single_agent",
+        "sub_agent_orchestrated"
+      ]
+    },
+    "strict_governance": {
+      "type": "boolean"
+    },
+    "telemetry_render": {
+      "type": "boolean"
+    },
+    "allow_parallel_non_conflicting_tasks": {
+      "type": "boolean"
+    },
+    "package_flat": {
+      "type": "boolean"
+    },
+    "architecture_target": {
+      "type": "string"
+    },
+    "canonical_reference_included": {
+      "type": "boolean"
+    }
+  },
+  "additionalProperties": false
+}
