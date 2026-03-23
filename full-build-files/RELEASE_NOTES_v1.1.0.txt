@@ -1,0 +1,7 @@
+CoSyn v1.1.0 (background proxy release)
+
+- Adds persistent local HTTP proxy on port 8080.
+- CoSyn enforces governance checks on requests and responses when enforcement is ON.
+- Launch with double-click: C:\.rtw\RTW-executables\cosyn-v1.1.0.exe
+- To route apps, set HTTP_PROXY and HTTPS_PROXY to http://127.0.0.1:8080 (user-level environment variables were set).
+- A versioned binary cosyn-v1.1.0.exe has been added; existing files not overwritten.
