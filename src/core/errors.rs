@@ -2,31 +2,23 @@ use std::fmt;
 
 #[derive(Debug)]
 pub enum CosynError {
-    Config(String),
-    InputGate(String),
-    Governance(String),
+    Input(String),
+    Draft(String),
     Validation(String),
+    Governance(String),
+    Lock(String),
     Orchestration(String),
-    LlmClient(String),
-    StateStore(String),
-    Packager(String),
-    Telemetry(String),
-    UiRuntime(String),
 }
 
 impl fmt::Display for CosynError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            Self::Config(msg) => write!(f, "[config] {}", msg),
-            Self::InputGate(msg) => write!(f, "[input_gate] {}", msg),
-            Self::Governance(msg) => write!(f, "[governance] {}", msg),
+            Self::Input(msg) => write!(f, "[input] {}", msg),
+            Self::Draft(msg) => write!(f, "[draft] {}", msg),
             Self::Validation(msg) => write!(f, "[validation] {}", msg),
+            Self::Governance(msg) => write!(f, "[governance] {}", msg),
+            Self::Lock(msg) => write!(f, "[lock] {}", msg),
             Self::Orchestration(msg) => write!(f, "[orchestration] {}", msg),
-            Self::LlmClient(msg) => write!(f, "[llm_client] {}", msg),
-            Self::StateStore(msg) => write!(f, "[state_store] {}", msg),
-            Self::Packager(msg) => write!(f, "[packager] {}", msg),
-            Self::Telemetry(msg) => write!(f, "[telemetry] {}", msg),
-            Self::UiRuntime(msg) => write!(f, "[ui_runtime] {}", msg),
         }
     }
 }

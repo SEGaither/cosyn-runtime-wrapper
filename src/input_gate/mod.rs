@@ -1,13 +1,13 @@
 use crate::core::errors::{CosynError, CosynResult};
-use crate::core::types::{ExecutionRequest, ValidatedExecutionRequest};
+use crate::core::types::ExecutionRequest;
 
-pub fn validate(request: ExecutionRequest) -> CosynResult<ValidatedExecutionRequest> {
-    if request.input.trim().is_empty() {
-        return Err(CosynError::InputGate("empty input".into()));
+pub fn accept(input: &str) -> CosynResult<ExecutionRequest> {
+    let trimmed = input.trim();
+    if trimmed.is_empty() {
+        return Err(CosynError::Input("empty input rejected".into()));
     }
-    Ok(ValidatedExecutionRequest {
-        id: request.id,
-        input: request.input,
-        persona: "default".into(),
+    Ok(ExecutionRequest {
+        id: "req-001".into(),
+        input: trimmed.to_string(),
     })
 }

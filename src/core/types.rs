@@ -1,9 +1,4 @@
-use serde::{Deserialize, Serialize};
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct AppConfig {
-    pub openai_api_key: String,
-}
+use crate::core::stage::Stage;
 
 #[derive(Debug, Clone)]
 pub struct ExecutionRequest {
@@ -12,13 +7,19 @@ pub struct ExecutionRequest {
 }
 
 #[derive(Debug, Clone)]
-pub struct ValidatedExecutionRequest {
-    pub id: String,
-    pub input: String,
-    pub persona: String,
+pub struct DraftOutput {
+    pub text: String,
 }
 
-#[derive(Debug, Clone, Serialize)]
-pub struct ModelOutput {
+#[derive(Debug, Clone)]
+pub struct LockedOutput {
     pub text: String,
+    pub locked: bool,
+}
+
+#[derive(Debug, Clone)]
+pub struct StageRecord {
+    pub stage: Stage,
+    pub passed: bool,
+    pub detail: String,
 }
