@@ -1,4 +1,5 @@
 use eframe::egui;
+use crate::output_mode::{RenderContext, OutputMode, render_output};
 
 pub struct CosynApp {
     input: String,
@@ -68,14 +69,40 @@ impl eframe::App for CosynApp {
             if !self.output.is_empty() {
                 ui.separator();
                 ui.label("Result:");
+
+                let render_ctx = if detect_artifact_mode(&self.input) {
+                    RenderContext { mode: OutputMode::Artifact }
+                } else {
+                    RenderContext { mode: OutputMode::Standard }
+                };
+
+                let rendered = render_output(&render_ctx, &self.output);
+
+                #[cfg(debug_assertions)]
+                {
+                    if matches!(render_ctx.mode, OutputMode::Artifact) {
+                        assert!(
+                            !rendered.contains("Router (control-plane)"),
+                            "Artifact mode contaminated with control-plane output"
+                        );
+                    }
+                }
+
                 egui::ScrollArea::vertical()
                     .max_height(200.0)
                     .show(ui, |ui| {
-                        ui.monospace(&self.output);
+                        ui.monospace(&rendered);
                     });
             }
         });
     }
+}
+
+fn detect_artifact_mode(input: &str) -> bool {
+    let normalized = input.to_lowercase();
+    normalized.contains("paste-ready")
+        || normalized.contains("render as artifact")
+        || normalized.contains("artifact only")
 }
 
 pub fn launch() -> Result<(), eframe::Error> {

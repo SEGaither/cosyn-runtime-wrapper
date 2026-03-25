@@ -1,4 +1,5 @@
 pub mod config_loader;
+pub mod output_mode;
 pub mod core;
 pub mod governance_layer;
 pub mod input_gate;
